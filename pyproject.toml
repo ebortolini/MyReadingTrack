@@ -1,0 +1,9 @@
+[project]
+name = "myreadingtrack"
+version = "0.1.0"
+description = "Simple project to use copilot-sdk"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "github-copilot-sdk>=0.1.20",
+]
