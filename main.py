@@ -1,12 +1,9 @@
 import asyncio
 import os
-import glob
-import csv
 from copilot import CopilotClient
 
 def load_all_csvs_from_folder(folder_path):
     files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
-    print(files)
 
     reading_list_by_year = {}
 
@@ -19,28 +16,26 @@ def load_all_csvs_from_folder(folder_path):
 
     return reading_list_by_year
 
-def build_prompt(csv_data, question):
-    return f"""These are a csv files representing the books that I read by year: {csv_data}\n
-    Based on the data, I would like to know: {question}
-    """
-
-
 async def main():
     client = CopilotClient()
     await client.start()
 
     session = await client.create_session({"model": "gpt-4.1"})
-    # Example usage: load all CSVs from the 'CSVs' folder
+
     csv_folder = os.path.join(os.path.dirname(__file__), 'CSVs')
-
     csv_data = load_all_csvs_from_folder(csv_folder)
-    
-    prompt = build_prompt(csv_data, "How many books I read in 2025?")
 
-    #print(f"Loaded CSV files: {list(csv_data.keys())}")
+    system_prompt = f"These are csv files representing the books that I read by year: {csv_data}\nUse this data to answer future questions about my reading habits."
+    await session.send_and_wait({"prompt": system_prompt})
 
-    response = await session.send_and_wait({"prompt": prompt})
-    print(response.data.content)
+    user_input = ""
+    while (user_input.lower() != "exit"):
+        user_input = input("Ask a question about your reading habits: ")
+        if (user_input.lower() == "exit"):
+            break
+        # Now only send the user's question
+        response = await session.send_and_wait({"prompt": user_input})
+        print(response.data.content)
 
     await client.stop()
 
